@@ -43,7 +43,9 @@ void setup()
   Serial.println();
   Serial.println("Booting...");
 
-  // Inicia I2C (orden correcto: SDA, SCL)
+  // === CONFIGURACIÓN I2C ===
+  // Se inicializa el bus con SDA=9 y SCL=18 a 100 kHz.
+  // El timeout de 50 ms evita bloqueos si un dispositivo mantiene el bus ocupado.
   Wire.begin(SDA_PIN, SCL_PIN);
   Wire.setClock(100000);   // 100 kHz (estable)
   Wire.setTimeOut(50);     // evita bloqueos si el bus se queda colgado
@@ -53,8 +55,14 @@ void setup()
   ui_init();
 }
 
-uint8_t scanner(){      //----------ESCANER I2C------------
-  
+
+
+uint8_t scanner(){      //----------ESCANER I2C------------ 
+/**
+* Escanea el bus I2C y retorna la última dirección encontrada.
+* Devuelve la dirección I2C (0 si no se detecta ningún dispositivo)
+* Imprime todos los hallazgos por Serial.
+*/
 
   uint8_t error;
   int devicesFound = 0;
@@ -87,6 +95,10 @@ uint8_t scanner(){      //----------ESCANER I2C------------
 }
 
 float measureTDS() {
+  // === MEDICIÓN TDS ===
+  // Lee ADS1115@0x49 en A0 y calcula ppm con compensación de temperatura.
+  // Ajustar tdsCorrectionFactor y límites según sonda real.
+
   if(!ADS_TDS.begin(ADDR_TDS)) return 0;
 
   int16_t val_0 = ADS_TDS.readADC_SingleEnded(0);
@@ -106,6 +118,8 @@ float measureTDS() {
 }
 
 float measureSoilHumidityPercent(){
+  // === HUMEDAD DE SUELO ===
+  // Mapea cuentas [wet..dry] -> [100..0] %.
   if(!ADS_SOIL.begin(ADDR_SOIL)) return 0.0;
   int dry = 17600; // value for dry sensor
   int wet = 5500; // value for wet sensor
@@ -120,6 +134,8 @@ float measureSoilHumidityPercent(){
 }
 
 float measureRainPercent(){
+  // === LLUVIA ===
+  // Mapear cuentas [dry..wet] -> [100..0] %.
   if(!ADS_RAIN.begin(ADDR_RAIN)) return -1.0;
 
   int dry = 14880; // value for dry sensor
@@ -166,6 +182,10 @@ void loop(){
       break;
 
     case ADDR_LUX_COLOR:      //LUZ Y COLOR
+    // === LUX/COLOR ===
+    // Si TSL2591 está presente se muestra LUX; si no, se intenta TCS34725 para color.
+    // En color, se calcula 0xRRGGBB y se aplica como fondo de un objeto LVGL.
+    
       Serial.println("Pantalla Luz o Color");
       if (tsl.begin()) {  //LUZ
         Serial.println(F("Found a TSL2591 sensor"));
