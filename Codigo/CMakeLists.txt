@@ -1,0 +1,14 @@
+SET(SOURCES ui_MainScreen.c
+    ui_LuxScreen.c
+    ui_TempHumScreen.c
+    ui_ColorScreen.c
+    ui_TdsScreen.c
+    ui_SoilScreen.c
+    ui_RainScreen.c
+    ui.c
+    ui_comp_hook.c
+    ui_helpers.c
+    ui_img_1249217846.c
+    ui_img_1695996548.c)
+
+add_library(ui ${SOURCES})
